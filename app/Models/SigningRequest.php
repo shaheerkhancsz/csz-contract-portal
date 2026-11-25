@@ -21,6 +21,7 @@ class SigningRequest extends Model
             'verified_at' => 'datetime',
             'signed_at' => 'datetime',
             'voided_at' => 'datetime',
+            'last_reminded_at' => 'datetime',
         ];
     }
 

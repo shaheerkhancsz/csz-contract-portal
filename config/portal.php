@@ -15,5 +15,9 @@ return [
         'otp_ttl_minutes' => (int) env('OTP_TTL_MINUTES', 10),     // how long a code is valid
         'otp_max_attempts' => (int) env('OTP_MAX_ATTEMPTS', 5),    // wrong tries before a code is locked
         'otp_resend_per_hour' => (int) env('OTP_RESEND_PER_HOUR', 5), // codes issued per link per hour
+        // Reminders for contracts sent but not yet signed (daily contracts:signing-reminders command).
+        'reminder_after_days' => (int) env('SIGN_REMINDER_AFTER_DAYS', 3),    // first nudge this long after sending
+        'reminder_interval_days' => (int) env('SIGN_REMINDER_INTERVAL_DAYS', 3), // wait between nudges
+        'reminder_max' => (int) env('SIGN_REMINDER_MAX', 3),       // stop after this many nudges
     ],
 ];
