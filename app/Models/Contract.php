@@ -57,6 +57,16 @@ class Contract extends Model
     public function approver(): BelongsTo { return $this->belongsTo(User::class, 'approved_by'); }
     public function parent(): BelongsTo { return $this->belongsTo(Contract::class, 'parent_contract_id'); }
     public function documents(): HasMany { return $this->hasMany(ContractDocument::class)->latest(); }
+    public function signingRequests(): HasMany { return $this->hasMany(SigningRequest::class)->latest('id'); }
+
+    /** The current open signing link, if one has been sent and is not yet signed/voided/expired. */
+    public function activeSigningRequest(): ?SigningRequest
+    {
+        return $this->signingRequests()
+            ->whereIn('status', [\App\Enums\SigningStatus::Pending->value, \App\Enums\SigningStatus::Verified->value])
+            ->get()
+            ->first(fn (SigningRequest $r) => ! $r->isExpired());
+    }
 
     public function activities(): HasMany
     {

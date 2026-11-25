@@ -2,12 +2,16 @@
 
 namespace App\Services;
 
+use App\Mail\ContractSignedMail;
 use App\Models\Contract;
+use App\Models\SigningRequest;
 use App\Models\User;
 use App\Notifications\ContractApproved;
 use App\Notifications\ContractReturned;
+use App\Notifications\ContractSigned;
 use App\Notifications\ContractSubmitted;
 use App\Support\Settings;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 
 /**
@@ -37,6 +41,25 @@ class ContractNotifier
     public function returned(Contract $contract, string $note): void
     {
         $this->notifyCreator($contract, fn () => new ContractReturned($contract, $this->actorName(), $note));
+    }
+
+    /** A client has signed online: confirm to the client and tell the drafter + managers. */
+    public function signed(SigningRequest $request): void
+    {
+        if (! Settings::enabled('notifications_enabled')) {
+            return;
+        }
+        $contract = $request->contract;
+
+        if ($request->email) {
+            Mail::to($request->email)->send(new ContractSignedMail($request));
+        }
+
+        $recipients = User::activeManagers();
+        if ($contract->creator && $contract->creator->is_active) {
+            $recipients = $recipients->push($contract->creator)->unique('id');
+        }
+        Notification::send($recipients, new ContractSigned($request));
     }
 
     private function notifyCreator(Contract $contract, callable $make): void

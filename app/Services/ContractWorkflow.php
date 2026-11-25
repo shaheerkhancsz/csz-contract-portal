@@ -3,10 +3,14 @@
 namespace App\Services;
 
 use App\Enums\ContractStatus;
+use App\Enums\SigningStatus;
+use App\Mail\SignatureRequestMail;
 use App\Models\ActivityLog;
 use App\Models\Contract;
 use App\Models\ContractDocument;
+use App\Models\SigningRequest;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -79,6 +83,124 @@ class ContractWorkflow
 
             return $doc;
         });
+    }
+
+    /**
+     * Phase 2: start an online signing session. Pins the exact approved PDF (and its hash),
+     * voids any earlier open link, and emails the client a signing link.
+     */
+    public function createSigningRequest(Contract $contract): \App\Models\SigningRequest
+    {
+        $this->expect($contract, [ContractStatus::Sent]);
+        if (blank($contract->client?->email)) {
+            throw new RuntimeException('Add an email address to the client before sending for signing.');
+        }
+        $sent = $contract->documents()->where('kind', 'sent')->latest()->first();
+        if (! $sent || ! Storage::disk('local')->exists($sent->path)) {
+            throw new RuntimeException('The approved PDF is missing. Re-approve the contract first.');
+        }
+
+        // Only one live link at a time.
+        $contract->signingRequests()
+            ->whereIn('status', [SigningStatus::Pending->value, SigningStatus::Verified->value])
+            ->update(['status' => SigningStatus::Voided->value, 'voided_at' => now()]);
+
+        $request = $contract->signingRequests()->create([
+            'token' => \App\Models\SigningRequest::newToken(),
+            'email' => $contract->client->email,
+            'status' => SigningStatus::Pending,
+            'sent_document_id' => $sent->id,
+            'sent_sha256' => $sent->sha256,
+            'expires_at' => now()->addDays((int) config('portal.signing.link_days')),
+            'created_by' => auth()->id(),
+        ]);
+
+        Mail::to($request->email)->send(new SignatureRequestMail($request));
+        ActivityLog::record('sign_sent', $contract, 'Signing link sent to '.$request->email);
+
+        return $request;
+    }
+
+    /** Re-send the signing email for an existing live link (same token). */
+    public function resendSigningRequest(SigningRequest $request): void
+    {
+        if (! $request->isUsable()) {
+            throw new RuntimeException('This signing link is no longer valid. Send a new one instead.');
+        }
+        Mail::to($request->email)->send(new SignatureRequestMail($request));
+        ActivityLog::record('sign_resent', $request->contract, 'Signing link re-sent to '.$request->email);
+    }
+
+    /** Void a live signing link without signing (e.g. wrong email, re-issue). */
+    public function voidSigningRequest(SigningRequest $request): void
+    {
+        if (! $request->status->isOpen()) {
+            throw new RuntimeException('This signing link is already closed.');
+        }
+        $request->update(['status' => SigningStatus::Voided, 'voided_at' => now()]);
+        ActivityLog::record('sign_voided', $request->contract, 'Signing link voided');
+    }
+
+    /**
+     * Complete an online signature. Requires an OTP-verified, unexpired link and that the
+     * exact approved PDF is unchanged. Stores the signed PDF + certificate and marks the contract Signed.
+     */
+    public function signOnline(SigningRequest $request, array $data): void
+    {
+        $contract = $request->contract;
+
+        if (! $request->isUsable()) {
+            throw new RuntimeException('This signing link is no longer valid.');
+        }
+        if (! $request->isVerified()) {
+            throw new RuntimeException('Please confirm your email with the code before signing.');
+        }
+        if ($contract->status !== ContractStatus::Sent) {
+            throw new RuntimeException('This contract is not awaiting signature.');
+        }
+        // Tamper check: the exact PDF shown to the signer must still be on file, unchanged.
+        $sent = $request->sentDocument;
+        if (! $sent || ! Storage::disk('local')->exists($sent->path)
+            || hash('sha256', Storage::disk('local')->get($sent->path)) !== $request->sent_sha256) {
+            throw new RuntimeException('The document has changed since the link was sent. Please contact us for a new link.');
+        }
+        if (blank($data['signer_name'] ?? null) || empty($data['intent'])) {
+            throw new RuntimeException('Type your full name and confirm you intend to sign.');
+        }
+
+        DB::transaction(function () use ($request, $contract, $data) {
+            $request->update([
+                'signer_name' => trim($data['signer_name']),
+                'signer_email' => $request->email,
+                'signature_image_path' => $data['signature_image_path'] ?? null,
+                'intent_confirmed' => true,
+                'ip' => request()?->ip(),
+                'user_agent' => substr((string) request()?->userAgent(), 0, 1000),
+                'signed_at' => now(),
+                'status' => SigningStatus::Signed,
+            ]);
+
+            $bytes = $this->pdf->signedContractPdf($contract->fresh(), $request->fresh());
+            $path = 'contracts/'.$contract->id.'/'.$contract->agreement_no.'-signed-'.now()->format('YmdHis').'.pdf';
+            Storage::disk('local')->put($path, $bytes);
+            $contract->documents()->create([
+                'kind' => 'signed',
+                'path' => $path,
+                'original_name' => $contract->agreement_no.'-signed.pdf',
+                'sha256' => hash('sha256', $bytes),
+                'size' => strlen($bytes),
+                'created_by' => null,
+            ]);
+
+            $contract->update(['status' => ContractStatus::Signed, 'signed_at' => now()]);
+            ActivityLog::record('signed', $contract, 'Signed online by '.$request->signer_name, [
+                'ip' => $request->ip,
+                'sha256' => $request->sent_sha256,
+            ]);
+            $this->notifier->signed($request->fresh());
+        });
+
+        $this->refreshStatus($contract->fresh());
     }
 
     /** Phase 1: the client signs on paper/scan; staff upload the signed copy. */

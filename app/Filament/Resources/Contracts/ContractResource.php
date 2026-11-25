@@ -322,6 +322,19 @@ class ContractResource extends Resource
                                     ->tooltip(fn ($record) => $record->sha256),
                             ]),
                     ]),
+                    Section::make('Online signing')->compact()
+                        ->visible(fn (Contract $r) => $r->signingRequests()->exists())
+                        ->schema([
+                            TextEntry::make('signing_status')->label('Status')->badge()
+                                ->state(fn (Contract $r) => $r->signingRequests()->first()?->status?->getLabel())
+                                ->color(fn (Contract $r) => $r->signingRequests()->first()?->status?->getColor()),
+                            TextEntry::make('signing_sent_to')->label('Sent to')->placeholder('—')
+                                ->state(fn (Contract $r) => $r->signingRequests()->first()?->email),
+                            TextEntry::make('signing_signer')->label('Signed by')->placeholder('Not yet')
+                                ->state(fn (Contract $r) => $r->signingRequests()->first()?->signer_name)
+                                ->helperText(fn (Contract $r) => ($s = $r->signingRequests()->first())?->signed_at
+                                    ? $s->signed_at->format('j M Y, H:i').' · IP '.($s->ip ?: '—') : null),
+                        ]),
                     Section::make('Activity')->compact()->collapsible()->schema([
                         RepeatableEntry::make('activities')->hiddenLabel()->placeholder('No activity yet.')
                             ->schema([
