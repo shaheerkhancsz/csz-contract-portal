@@ -18,7 +18,7 @@ use RuntimeException;
  */
 class ContractWorkflow
 {
-    public function __construct(private ContractRenderer $renderer, private PdfService $pdf) {}
+    public function __construct(private ContractRenderer $renderer, private PdfService $pdf, private ContractNotifier $notifier) {}
 
     /** Values that must be filled before the contract can leave Draft. */
     public function missingValues(Contract $contract): array
@@ -42,6 +42,7 @@ class ContractWorkflow
         }
         $contract->update(['status' => ContractStatus::AwaitingApproval, 'submitted_at' => now(), 'review_note' => null]);
         ActivityLog::record('submitted', $contract, 'Submitted for approval');
+        $this->notifier->submitted($contract);
     }
 
     public function returnToDraft(Contract $contract, string $note): void
@@ -49,6 +50,7 @@ class ContractWorkflow
         $this->expect($contract, [ContractStatus::AwaitingApproval]);
         $contract->update(['status' => ContractStatus::Draft, 'review_note' => $note]);
         ActivityLog::record('returned', $contract, 'Sent back to draft: '.$note);
+        $this->notifier->returned($contract, $note);
     }
 
     /** Manager approval: freezes the text, stores the approved PDF with its SHA-256 hash, marks as Sent. */
@@ -73,6 +75,7 @@ class ContractWorkflow
 
             $doc = $this->storePdf($contract->fresh(), 'sent');
             ActivityLog::record('approved', $contract, 'Approved and marked as sent', ['sha256' => $doc->sha256]);
+            $this->notifier->approved($contract);
 
             return $doc;
         });
