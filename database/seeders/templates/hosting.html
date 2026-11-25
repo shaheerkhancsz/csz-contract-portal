@@ -1,0 +1,53 @@
+@parties
+<h2>Agreement Summary</h2>
+<table>
+<tr><td>Client</td><td>{{client_name}}</td></tr>
+<tr><td>Service</td><td>{{service_type}}: {{plan_name}}</td></tr>
+<tr><td>Data centre location</td><td>{{data_centre}}</td></tr>
+<tr><td>Term</td><td>{{start_date}} to {{end_date}}</td></tr>
+<tr><td>Fee</td><td>{{fee}} {{fee_per}} plus {{sales_tax_name}}</td></tr>
+<tr><td>Uptime commitment</td><td>{{uptime_percent}} per calendar month</td></tr>
+</table>
+@term
+<h2>The Service</h2>
+<p>CSZ will provide the Client with the following {{service_type}} service (the "Service"):</p>
+{{specifications}}
+<p>Operating system / platform: {{operating_system}}. The Service is hosted in a professional data centre in {{data_centre}}.</p>
+[[if setup]]
+<p>A one-time set-up fee of {{setup_fee}} plus {{sales_tax_name}} is payable with the first invoice.</p>
+[[endif]]
+[[if managed]]
+<h3>Management by CSZ</h3>
+<ul>
+<li>Operating system and control panel security updates.</li>
+<li>Server monitoring, with action taken on outages and resource alerts.</li>
+<li>Firewall and basic hardening, and help with configuration requests within the scope of the Service.</li>
+</ul>
+[[else]]
+<h3>Unmanaged Service</h3>
+<p>The Client manages the software on the Service, including updates, security and configuration. CSZ is responsible for the hardware, network and power, and for restoring access to the Service.</p>
+[[endif]]
+[[if backups]]
+<h3>Backups</h3>
+<p>{{backup_details}}</p>
+<p>Backups are a safety measure; the Client should keep its own copy of important data.</p>
+[[endif]]
+<h2>Availability</h2>
+<p>CSZ aims to keep the Service available {{uptime_percent}} of each calendar month, not counting planned maintenance announced at least 48 hours ahead, problems caused by the Client's software or actions, or events outside CSZ's reasonable control.</p>
+[[if service_credits]]
+<p>If availability in a month falls below the commitment, the Client may claim a credit against the next invoice:</p>
+<table>
+<tr><th>Monthly availability</th><th>Credit (% of that month's fee)</th></tr>
+<tr><td>Below {{uptime_percent}} and at least 99.5%</td><td>5%</td></tr>
+<tr><td>Below 99.5% and at least 99%</td><td>10%</td></tr>
+<tr><td>Below 99%</td><td>25%</td></tr>
+</table>
+<p>Credits must be claimed within 30 days of the end of the month, are capped at 25% of that month's fee, and are the Client's only remedy for downtime.</p>
+[[endif]]
+<h2>Acceptable Use</h2>
+<p>The Client will not use the Service for anything unlawful in Pakistan or in the country of the data centre, including sending spam, hosting malware or phishing pages, infringing copyright, network attacks, or mining cryptocurrency. CSZ may suspend the Service without notice to stop serious abuse or a security threat, and will tell the Client the reason as soon as it can.</p>
+<p>The Client is responsible for the content and data it stores, for keeping its passwords secure, and for the actions of anyone it gives access to.</p>
+@fees
+<h2>Suspension for Non-payment and Data after Termination</h2>
+<p>If an invoice is unpaid 15 days after its due date, CSZ may suspend the Service after giving notice. Data on a cancelled or expired Service is kept for 7 days and then permanently deleted. The Client should download its data before the end date.</p>
+@end

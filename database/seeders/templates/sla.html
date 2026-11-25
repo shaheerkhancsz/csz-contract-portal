@@ -1,0 +1,56 @@
+@parties
+<h2>Agreement Summary</h2>
+<table>
+<tr><td>Client</td><td>{{client_name}}</td></tr>
+<tr><td>Application</td><td>{{application_name}} (the "Application")</td></tr>
+<tr><td>Term</td><td>{{start_date}} to {{end_date}}</td></tr>
+<tr><td>Support fee</td><td>{{fee}} {{fee_per}} plus {{sales_tax_name}}</td></tr>
+<tr><td>Availability commitment</td><td>{{uptime_percent}} per calendar month</td></tr>
+<tr><td>Included change hours</td><td>{{change_hours}} hours per month</td></tr>
+</table>
+<h2>Purpose</h2>
+<p>CSZ developed or supports the Application for the Client: {{application_description}}. This Service Level Agreement sets out how CSZ will support, maintain and host the Application, and the response times it commits to.</p>
+@term
+<h2>Services Covered</h2>
+<ul>
+<li>Fixing defects in the Application's code delivered by CSZ.</li>
+<li>Security patches to the Application's framework and libraries.</li>
+<li>Monitoring of availability and errors, with action taken on alerts.</li>
+<li>[[if hosting]]Hosting of the Application on CSZ's servers, including daily backups kept for 30 days.[[endif]]</li>
+<li>Up to {{change_hours}} hours per month of small changes and improvements requested by the Client. Unused hours do not carry over.</li>
+<li>Support by email, the CSZ client portal and phone for Priority 1 issues.</li>
+</ul>
+<h2>Support Hours and Priorities</h2>
+<p>Support hours are {{support_hours}}.[[if after_hours]] Priority 1 issues are handled 24 hours a day, 7 days a week.[[endif]]</p>
+<table>
+<tr><th>Priority</th><th>Meaning</th><th>First response</th><th>Target fix or workaround</th></tr>
+<tr><td>P1: Critical</td><td>Application down or unusable for all users, or data at risk</td><td>{{p1_response}}</td><td>{{p1_resolution}}</td></tr>
+<tr><td>P2: High</td><td>A main feature not working, with no workaround</td><td>{{p2_response}}</td><td>3 business days</td></tr>
+<tr><td>P3: Normal</td><td>Minor fault, question or change request</td><td>{{p3_response}}</td><td>Planned with the Client</td></tr>
+</table>
+<p>Response time runs from when the issue is reported through an agreed channel. CSZ sets the priority in good faith with the Client.</p>
+<h2>Availability</h2>
+<p>CSZ aims to keep the Application available {{uptime_percent}} of each calendar month, not counting planned maintenance announced at least 48 hours ahead[[if not hosting]], failures of hosting or services provided by the Client or third parties[[endif]], or events outside CSZ's reasonable control.</p>
+[[if service_credits]]
+<p>If availability in a month falls below the commitment because of CSZ, the Client may claim a credit of 5% of that month's fee for each full 0.5% below the commitment, up to 25% of the month's fee. Credits must be claimed within 30 days and are the Client's only remedy for downtime.</p>
+[[endif]]
+<h2>Change Requests</h2>
+<p>Work beyond the included hours, and new features, are quoted in writing and charged at {{change_rate}} per hour, or at a fixed price agreed in advance.</p>
+<h2>Services Not Covered</h2>
+<ul>
+<li>New modules or major redesigns.</li>
+<li>Problems caused by changes made by the Client or third parties without CSZ's agreement.</li>
+<li>Third-party services, licences and subscriptions used by the Application, which the Client pays for.</li>
+<li>Data entry, training and content work.</li>
+</ul>
+@fees
+<h2>Client Responsibilities</h2>
+<ul>
+<li>Name a contact person who can report issues and approve changes.</li>
+<li>Report issues with enough detail for CSZ to reproduce them.</li>
+<li>Keep third-party licences and services used by the Application active.</li>
+<li>Test and approve changes in the staging environment before they go live, where one is provided.</li>
+</ul>
+<h2>Ownership</h2>
+<p>The Client owns its data. Ownership of the Application's source code is as set out in the development agreement between the Parties; this Agreement does not change it.</p>
+@end

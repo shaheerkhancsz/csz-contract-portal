@@ -1,0 +1,5 @@
+# Safety net if the subdomain's document root points at this folder instead of /public.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

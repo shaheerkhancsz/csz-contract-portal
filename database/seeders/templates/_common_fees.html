@@ -1,0 +1,18 @@
+<h2>Fees and Payment</h2>
+<p>The Client will pay CSZ a fee of <strong>{{fee}}</strong> {{fee_per}} ({{fee_words}}), plus taxes as set out below.</p>
+{{fee_table}}
+[[if recurring_billing]]
+<p>CSZ will issue an invoice on the {{invoice_day}} day of each billing period through the CSZ client portal (clients.creativesolutionzone.com) or by email. Payment is due by the {{due_day}} day of the same period.</p>
+[[else]]
+<p>CSZ will issue its invoice through the CSZ client portal (clients.creativesolutionzone.com) or by email. Payment is due within 7 days of the invoice date.</p>
+[[endif]]
+[[if sales_tax]]
+<p>The fee does not include {{sales_tax_name}}, which CSZ adds to each invoice at {{sales_tax_rate}} or at the rate in force on the invoice date.</p>
+[[endif]]
+[[if withholding_tax]]
+<p>Where the Client deducts income tax at source under the Income Tax Ordinance, 2001, it will send CSZ the tax deduction certificate within 30 days of the payment. If the certificate is not received in that time, the amount deducted is treated as unpaid and CSZ may invoice it again.</p>
+[[endif]]
+[[if late_fee]]
+<p>If an invoice is not paid by its due date, a late fee of {{late_fee_percent}} of the unpaid amount is added. If payment is more than 15 days late, CSZ may pause the services until the account is brought up to date; the term is not extended for the paused period.</p>
+[[endif]]
+<p>Work outside this Agreement is charged separately, only after the Client approves a written quotation.</p>

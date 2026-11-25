@@ -1,0 +1,10 @@
+<h2>Term and Renewal</h2>
+<p>This Agreement starts on <strong>{{start_date}}</strong> and runs for {{term_text}}, ending on <strong>{{end_date}}</strong>, unless it is ended earlier under the clause on ending the Agreement.</p>
+[[if auto_renewal]]
+<p>CSZ will send a renewal notice and invoice at least 30 days before the end date. The Agreement renews for a further term of the same length when the Client pays the renewal invoice before the end date. If it is not paid by the end date, the Agreement expires and the services stop.</p>
+[[else]]
+<p>The Agreement ends on the end date. The Parties may agree a new term in writing.</p>
+[[endif]]
+[[if renewal_increase]]
+<p>At each renewal the fee increases by <strong>{{renewal_increase_percent}}</strong> over the fee for the term that is ending. For example, the fee becomes {{renewal_fee}} {{fee_per}} after the first renewal and {{renewal_fee_2}} {{fee_per}} after the second.</p>
+[[endif]]

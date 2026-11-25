@@ -1,0 +1,83 @@
+@parties
+<h2>Agreement Summary</h2>
+<table>
+<tr><td>Client</td><td>{{client_name}}</td></tr>
+<tr><td>Website covered</td><td>{{website_url}} (the "Website")</td></tr>
+<tr><td>Platform</td><td>{{platform}}</td></tr>
+<tr><td>Term</td><td>{{start_date}} to {{end_date}}</td></tr>
+<tr><td>Maintenance fee</td><td>{{fee}} {{fee_per}} plus {{sales_tax_name}}</td></tr>
+<tr><td>Increase at renewal</td><td>{{renewal_increase_percent}}</td></tr>
+</table>
+@term
+<h2>Services Covered</h2>
+<p>During the term CSZ will provide the following services for the Website.</p>
+<h3>Updates</h3>
+<ul>
+<li>WordPress core updates (security and stable releases), tested after each update.</li>
+<li>Updates of installed themes and plugins[[if client_licences]], where the Client holds a valid licence for paid ones[[endif]].</li>
+<li>Fixing problems on the Website caused directly by an update CSZ carried out.</li>
+</ul>
+<h3>Backups and Restore</h3>
+<ul>
+<li>{{backup_frequency}} automated backups of the Website files and database, kept for at least {{backup_retention_days}} days.</li>
+<li>A fresh backup before every major update.</li>
+<li>Restoring the Website from the latest good backup if it breaks or goes down.</li>
+</ul>
+[[if security]]
+<h3>Security</h3>
+<ul>
+<li>Security plugin set-up and monitoring, including login protection.</li>
+<li>Regular malware scans[[if malware_removal]], and removal of malware found during the term[[endif]].</li>
+<li>Checking that the SSL certificate (HTTPS) stays valid.</li>
+</ul>
+[[endif]]
+[[if uptime_monitoring]]
+<h3>Monitoring and Performance</h3>
+<ul>
+<li>Uptime monitoring, with action taken when the Website goes down.</li>
+<li>A monthly health check: database clean-up, cache check and basic speed tuning.</li>
+<li>Checking that contact and enquiry forms are working.</li>
+</ul>
+[[endif]]
+<h3>Minor Changes and Support</h3>
+<ul>
+<li>Small content changes (text, images, prices, contact details, adding a post) of up to {{content_hours}} hours per month. Unused hours do not carry over.</li>
+<li>Support by email, WhatsApp or the CSZ client portal.</li>
+<li>A short maintenance report every {{report_frequency}}, listing the work done.</li>
+</ul>
+<h3>Response Times</h3>
+<table>
+<tr><th>Issue type</th><th>Example</th><th>First response</th></tr>
+<tr><td>Critical</td><td>Website down, hacked or showing errors</td><td>Within {{critical_response}}</td></tr>
+<tr><td>Normal</td><td>Content change or minor display problem</td><td>Within {{normal_response}}</td></tr>
+</table>
+<p>Business hours are {{business_hours}}.</p>
+<h2>Services Not Covered</h2>
+<p>The following are not part of this Agreement. CSZ can provide them for an extra charge after a written quotation:</p>
+<ul>
+<li>Website redesign, new pages, sections or layouts.</li>
+<li>New features, custom coding, or new plugin or theme development.</li>
+<li>Content writing, translation, graphic design, photo or video editing.</li>
+<li>SEO, online advertising, social media management and other digital marketing.</li>
+<li>Setting up e-commerce, payment gateways or third-party integrations.</li>
+<li>Content changes beyond {{content_hours}} hours per month.</li>
+<li>Purchase or renewal of paid plugins, themes, licences, domain names or hosting.</li>
+<li>Email account set-up or email delivery problems.</li>
+<li>Moving the Website to a new server or host.</li>
+<li>Fixing damage caused by the Client, its staff or any third party who changed the Website, server or settings without CSZ's knowledge.</li>
+<li>Problems caused by the hosting provider, internet service or other third-party services outside CSZ's control.</li>
+<li>Training of the Client's staff.</li>
+</ul>
+@fees
+<h2>Client Responsibilities</h2>
+<p>The Client will:</p>
+<ul>
+<li>Give CSZ administrator access to WordPress and, where needed, to the hosting control panel.</li>
+<li>Tell CSZ before making changes to the Website or installing plugins or themes.</li>
+<li>Supply content (text, images, files) in final form and on time.</li>
+<li>Keep licences for paid plugins and themes, and its hosting and domain services, active.</li>
+<li>Keep its own passwords safe and tell CSZ straight away about any suspected security problem.</li>
+</ul>
+<h2>Ownership</h2>
+<p>The Client owns the Website content, data and domain name. Nothing in this Agreement transfers that ownership to CSZ.</p>
+@end
