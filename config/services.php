@@ -42,6 +42,9 @@ return [
         'secret' => env('WHMCS_API_SECRET'),
         'admin_url' => env('WHMCS_ADMIN_URL'),     // optional, for a deep link into WHMCS admin
         'timeout' => (int) env('WHMCS_TIMEOUT', 10),
+        // Shared secret for the SSO handoff from WHMCS into the client area. Keep this
+        // identical in the WHMCS hook that builds the signed /client/sso link.
+        'sso_secret' => env('WHMCS_SSO_SECRET'),
     ],
 
 ];

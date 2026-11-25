@@ -16,7 +16,7 @@ use RuntimeException;
  * Public, login-free signing flow driven by an emailed token:
  * start → email one-time code → review the document → type name (+ optional drawn signature) → done.
  */
-#[Layout('layouts.public')]
+#[Layout('components.public-layout')]
 class SignContract extends Component
 {
     public string $token = '';
