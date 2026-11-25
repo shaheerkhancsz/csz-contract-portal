@@ -1,6 +1,6 @@
-# CSZ Contract Portal — Phase 1
+# CSZ Contract Portal — Phases 1–2
 
-Staff portal for Creative Solution Zone to create client agreements from templates and produce them as PDFs on the CSZ letterhead.
+Staff portal for Creative Solution Zone to create client agreements from templates and produce them as PDFs on the CSZ letterhead, send them for online signing, and give clients a WHMCS-linked area to review and sign.
 
 **Address:** https://contracts.creativesolutionzone.com
 **Built with:** Laravel 13, Filament 5, mPDF, MySQL. Needs PHP 8.3 or newer with the `intl`, `mbstring`, `gd`, `pdo_mysql`, `fileinfo` and `zip` extensions.
@@ -22,6 +22,17 @@ Staff portal for Creative Solution Zone to create client agreements from templat
 Starter templates: **WordPress Website Maintenance (WMA)**, **Hosting Services (HOST)**, **Custom Web Application SLA (SLA)**.
 
 Agreement numbers look like `CSZ-WMA-2026-0001`.
+
+## What Phase 2 adds
+
+| Area | What you get |
+|---|---|
+| Email notifications | Branded, queued emails as a contract moves through approval: managers are told when staff submit for approval; the drafter is told when it's approved or sent back. Turn individual emails (or all of them) on/off under Settings. |
+| Online signing | After approval, staff click **Send for e-signing** and the client gets a link. The client confirms their identity with a one-time email code, reviews the exact approved PDF, types their name (and can draw a signature), and signs — no login needed. Staff can copy, resend or cancel the link. |
+| Signature certificate | The signed PDF carries an appended **Certificate of Completion**: the document's SHA-256, the signer's name and email, the time the code was verified, their IP and device, and the CSZ approver. A tamper check refuses to sign if the approved PDF has changed. |
+| Client area (WHMCS SSO) | A client logged into WHMCS is handed straight into their contract list here (no separate password), where they can review, sign, and download signed copies. The session is separate from the staff portal. |
+| WHMCS link | Staff link a client to their WHMCS account by email (or WHMCS ID) with one API call — stored for later billing phases. No ongoing sync. |
+| Reminders | A daily job nudges clients who were sent a contract but haven't signed — after a few days, then at an interval, up to a capped number of times. |
 
 ## Install on the cPanel server
 
@@ -59,6 +70,17 @@ Contracts and uploaded signed copies are in `storage/app/private` (not reachable
 
 With Composer on the server (or locally): `composer install --no-dev -o`, then `php artisan migrate --force && php artisan optimize`.
 
-## Coming next (Phase 2–4)
+## Phase 2 configuration
 
-Online signing with email OTP and a certificate page · client area and WHMCS link · email notifications · Zoho Books connector (customers, recurring invoices, status sync, late fee) · renewal engine · AI-assisted clauses · remaining templates · Odoo connector.
+Online signing and notifications are queued, so the per-minute `schedule:run` cron (step 7 above) must be in place — it drains the email queue and runs the daily reminder and status jobs. Then in `.env`:
+
+- **Mail** — set the real SMTP details (`MAIL_*`); emails are sent from the server.
+- **Signing** — tune link validity and the one-time-code rules with `SIGN_LINK_DAYS`, `OTP_TTL_MINUTES`, `OTP_MAX_ATTEMPTS`, `OTP_RESEND_PER_HOUR`, and reminders with `SIGN_REMINDER_AFTER_DAYS` / `SIGN_REMINDER_INTERVAL_DAYS` / `SIGN_REMINDER_MAX`.
+- **WHMCS link** — create an API credential in WHMCS → Setup → Staff API (allow `GetClientsDetails`, add the server IP to the allowlist) and set `WHMCS_URL`, `WHMCS_API_IDENTIFIER`, `WHMCS_API_SECRET`, `WHMCS_ADMIN_URL`.
+- **Client-area SSO** — set `WHMCS_SSO_SECRET` to a long random string and use the **same** value in the WHMCS hook that builds the `/client/sso` link. `php artisan whmcs:sso-url {whmcs_client_id} {email}` prints a signed test link and documents the exact token algorithm for that hook. `CLIENT_SESSION_MINUTES` and `CLIENT_SSO_TTL` tune the session and link lifetimes.
+
+The WHMCS-side piece (the "Sign your contracts" button that mints the SSO link) lives in WHMCS, not this app.
+
+## Coming next (Phase 3–4)
+
+Zoho Books connector (customers, recurring invoices, status sync, late fee) · renewal engine · AI-assisted clauses · remaining templates · Odoo connector.
