@@ -37,6 +37,10 @@ class Settings
         'brand_accent' => '#F2A65A',
         'brand_grey' => '#7C8286',
         'business_hours' => 'Monday to Saturday, 10:00 am to 6:00 pm (Pakistan Standard Time), excluding public holidays',
+        // Email notifications
+        'notifications_enabled' => '1',             // master switch for portal emails
+        'notify_managers_on_submit' => '1',         // email managers when staff submit for approval
+        'notify_creator_on_review' => '1',          // email the drafter when approved or sent back
     ];
 
     public static function all(): array
@@ -51,6 +55,12 @@ class Settings
     public static function get(string $key, mixed $default = null): mixed
     {
         return self::all()[$key] ?? $default ?? (self::DEFAULTS[$key] ?? null);
+    }
+
+    /** Boolean view of a stored setting ('1', 'true', 'yes', 'on' are true). */
+    public static function enabled(string $key): bool
+    {
+        return filter_var(self::get($key), FILTER_VALIDATE_BOOLEAN);
     }
 
     public static function setMany(array $values): void

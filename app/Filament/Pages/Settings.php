@@ -10,6 +10,7 @@ use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -80,6 +81,14 @@ class Settings extends Page
                 TextInput::make('default_invoice_day')->numeric()->minValue(1)->maxValue(28),
                 TextInput::make('default_due_day')->label('Default payment due day')->numeric()->minValue(1)->maxValue(28),
             ]),
+            Section::make('Email notifications')
+                ->description('Automated emails sent as contracts move through approval. Delivery uses the mail settings in the server\'s .env file.')
+                ->schema([
+                    Toggle::make('notifications_enabled')->label('Send portal emails')
+                        ->helperText('Master switch. Turn off to pause every automated email.'),
+                    Toggle::make('notify_managers_on_submit')->label('Email managers when a contract is submitted for approval'),
+                    Toggle::make('notify_creator_on_review')->label('Email the drafter when their contract is approved or sent back'),
+                ]),
             Section::make('Brand colours')->columns(4)->collapsed()->schema([
                 ColorPicker::make('brand_primary')->label('Sky blue'),
                 ColorPicker::make('brand_grey')->label('Grey'),
@@ -92,7 +101,7 @@ class Settings extends Page
     public function save(): void
     {
         $data = $this->form->getState();
-        Store::setMany(collect($data)->map(fn ($v) => $v ?? '')->all());
+        Store::setMany(collect($data)->map(fn ($v) => is_bool($v) ? ($v ? '1' : '0') : ($v ?? ''))->all());
         ActivityLog::record('settings', null, 'Settings updated');
         Notification::make()->success()->title('Settings saved')->send();
     }

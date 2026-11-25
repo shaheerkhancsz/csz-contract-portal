@@ -77,6 +77,10 @@ class ClientResource extends Resource
                 TextEntry::make('ntn')->label('NTN')->placeholder('—'),
                 TextEntry::make('strn')->label('STRN')->placeholder('—'),
                 IconEntry::make('withholds_tax')->label('Deducts WHT')->boolean(),
+                TextEntry::make('whmcs_client_id')->label('WHMCS account')->placeholder('Not linked')
+                    ->state(fn (Client $c) => $c->whmcs_client_id ? 'Linked · #'.$c->whmcs_client_id : null)
+                    ->url(fn (Client $c) => $c->whmcs_client_id ? app(\App\Services\Whmcs\WhmcsClient::class)->adminClientUrl($c->whmcs_client_id) : null)
+                    ->openUrlInNewTab(),
                 TextEntry::make('notes')->columnSpanFull()->placeholder('—'),
             ]),
         ]);

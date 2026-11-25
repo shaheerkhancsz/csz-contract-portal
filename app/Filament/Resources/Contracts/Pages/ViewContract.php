@@ -37,6 +37,14 @@ class ViewContract extends ViewRecord
         return Width::Full;
     }
 
+    /** Managers, or the staff member who drafted it, may send/cancel the signing link. */
+    private function canSend(Contract $c): bool
+    {
+        $user = auth()->user();
+
+        return $user->isManager() || $c->created_by === $user->id;
+    }
+
     private function run(callable $fn, string $success): void
     {
         try {
@@ -76,7 +84,30 @@ class ViewContract extends ViewRecord
             Action::make('pdf')->label(fn () => $c->frozen_html ? 'Download PDF' : 'Preview PDF')->icon('heroicon-o-document-arrow-down')->color('gray')
                 ->url(fn () => route('files.contract.pdf', $c))->openUrlInNewTab(),
 
+            Action::make('sendForSigning')->label('Send for e-signing')->icon('heroicon-o-envelope')->color('success')
+                ->visible(fn () => $c->status === ContractStatus::Sent && ! $c->activeSigningRequest() && $this->canSend($c))
+                ->requiresConfirmation()->modalHeading('Email the client a signing link?')
+                ->modalDescription(fn () => 'We will email '.($c->client?->email ?: 'the client').' a secure link to review and sign this contract online. They confirm their identity with a one-time email code.')
+                ->disabled(fn () => blank($c->client?->email))
+                ->action(fn () => $this->run(fn ($w) => $w->createSigningRequest($c), 'Signing link emailed to the client')),
+
             ActionGroup::make([
+                Action::make('copySigningLink')->label('Signing link')->icon('heroicon-o-link')
+                    ->visible(fn () => (bool) $c->activeSigningRequest())
+                    ->modalHeading('Signing link')
+                    ->modalDescription(fn () => new \Illuminate\Support\HtmlString('Share this link with the client if the email did not arrive:<br><br><code style="word-break:break-all;">'.e($c->activeSigningRequest()?->signingUrl()).'</code>'))
+                    ->modalSubmitAction(false)->modalCancelActionLabel('Close'),
+
+                Action::make('resendSigning')->label('Resend signing link')->icon('heroicon-o-arrow-path')
+                    ->visible(fn () => (bool) $c->activeSigningRequest())
+                    ->requiresConfirmation()->modalDescription(fn () => 'Re-send the signing email to '.$c->activeSigningRequest()?->email.'.')
+                    ->action(fn () => $this->run(fn ($w) => $w->resendSigningRequest($c->activeSigningRequest()), 'Signing email re-sent')),
+
+                Action::make('voidSigning')->label('Cancel signing link')->icon('heroicon-o-no-symbol')->color('warning')
+                    ->visible(fn () => (bool) $c->activeSigningRequest() && $this->canSend($c))
+                    ->requiresConfirmation()->modalDescription('The current link stops working. You can send a new one afterwards.')
+                    ->action(fn () => $this->run(fn ($w) => $w->voidSigningRequest($c->activeSigningRequest()), 'Signing link cancelled')),
+
                 Action::make('signed')->label('Upload signed copy')->icon('heroicon-o-pencil-square')
                     ->visible(fn () => $c->status === ContractStatus::Sent)
                     ->modalDescription('Upload the copy signed by both sides (PDF or a scan). The contract becomes Signed, and Active from its start date.')

@@ -52,4 +52,13 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
     {
         return in_array($this->role, [Role::Admin, Role::Manager], true);
     }
+
+    /** Active users who can approve contracts (admins and managers). Recipients for approval emails. */
+    public static function activeManagers(): \Illuminate\Database\Eloquent\Collection
+    {
+        return static::query()
+            ->whereIn('role', [Role::Admin->value, Role::Manager->value])
+            ->where('is_active', true)
+            ->get();
+    }
 }
